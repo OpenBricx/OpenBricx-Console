@@ -42,7 +42,7 @@ The Console is a device-agnostic host: it moves bytes over serial/BLE/Wi-Fi,
 verifies signatures, and flashes chips. Product-specific behaviour lives in
 plugins. Making the SDK boundary explicitly non-copyleft means anyone can build
 and ship a plugin for their own hardware on their own terms, which is the point
-of the plugin architecture (see [ARCHITECTURE.md](ARCHITECTURE.md)).
+of the plugin architecture.
 
 ### Trademarks
 
