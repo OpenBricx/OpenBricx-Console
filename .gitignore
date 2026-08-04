@@ -1,0 +1,19 @@
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/gen/
+.env
+.claude/
+
+# Plugin publisher signing key — NEVER commit. Mint with `npm run plugin:keygen`.
+.plugin-keys/
+
+# Built plugin bundles (output of `npm run plugin:build`).
+examples/**/dist/
+*.obxplugin
+
+# Local catalog server staging (npm run catalog:dev).
+.dev-catalog/
+
+# Local dev captures — not shipped in the public repo.
+Screenshots/

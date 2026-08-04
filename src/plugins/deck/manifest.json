@@ -1,0 +1,10 @@
+{
+  "product": "openbricx-deck",
+  "name": "OpenBricx Deck",
+  "icon": "deck",
+  "transports": ["serial", "ble", "wifi"],
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "Macro pad companion — profiles, macros, PC telemetry, and firmware updates for the OpenBricx Deck.",
+  "capabilities": ["pc-host", "dialog", "files", "ota", "firmware-catalog"]
+}

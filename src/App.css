@@ -1,0 +1,1238 @@
+﻿/* ─────────────────────────────────────────────────────────────────────────────
+   OpenBricx "Workshop" theme.
+
+   The old palette was GitHub Dark's exact hex (#0d1117 / #58a6ff / #30363d) — a
+   cold, developer-console look. This is a warmer, maker-bench identity drawn from
+   the OpenBricx logo: a vibrant azure (#2e90fa, the brand-blue family from the
+   bricks/frame) as the primary accent, brand orange (#f49d40, the circuit cube) as
+   a secondary highlight, warm neutrals with a faint warm bias (chosen, not a stock
+   blue-grey), and solid tactile surfaces with soft elevation instead of glass.
+
+   Dark is the default; the light theme is a bright warm-paper counterpart.
+   Variable NAMES stay `--pcb-*` (used across all five stylesheets) — only the
+   values change, which re-skins the whole app from here.
+   ──────────────────────────────────────────────────────────────────────────── */
+:root {
+  --pcb-bg: #131614;         /* warm near-black, faint green cast */
+  --pcb-surface: #1c211d;    /* raised card */
+  --pcb-surface-2: #252b26;  /* inset / higher elevation */
+  --pcb-border: #333c35;     /* warm hairline */
+  --pcb-text: #e7ece5;       /* warm off-white */
+  --pcb-muted: #8f998c;      /* warm sage grey */
+  --pcb-accent: #2e90fa;     /* vibrant azure (brand-blue family) — primary action */
+  --pcb-accent-strong: #1570ef;
+  --on-accent: #ffffff;      /* text/icon sitting on a filled accent button */
+  --pcb-blue: #2e90fa;       /* alias of the accent blue */
+  --pcb-green: #3ddc84;      /* success / connected */
+  --pcb-yellow: #e8a23d;     /* warn / serial — warm amber */
+  --pcb-orange: #f49d40;     /* brand orange (the logo cube) — secondary highlight */
+  --pcb-purple: #b492ff;     /* violet accents (IR product / BLE) */
+  --pcb-red: #f26256;        /* danger */
+
+  /* accent tints — one source, so glows/pills don't hard-code the accent rgba */
+  --accent-tint:        color-mix(in srgb, var(--pcb-accent) 14%, transparent);
+  --accent-tint-strong: color-mix(in srgb, var(--pcb-accent) 24%, transparent);
+
+  /* structural tokens */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.28), 0 1px 1px rgba(0, 0, 0, 0.2);
+  --shadow-2: 0 10px 30px rgba(0, 0, 0, 0.35), 0 3px 8px rgba(0, 0, 0, 0.24);
+  --shadow-accent: 0 8px 26px color-mix(in srgb, var(--pcb-accent) 22%, transparent);
+
+  --font-ui: "Inter", "Segoe UI Variable Text", "Segoe UI", -apple-system,
+    BlinkMacSystemFont, Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", "SF Mono",
+    Menlo, Consolas, monospace;
+}
+
+/* Light theme — bright warm paper, deeper green so it reads on white. */
+:root[data-theme="light"] {
+  --pcb-bg: #f4f2ec;         /* warm paper */
+  --pcb-surface: #ffffff;
+  --pcb-surface-2: #efece3;
+  --pcb-border: #e3ded2;     /* warm hairline */
+  --pcb-text: #1e2119;       /* warm near-black */
+  --pcb-muted: #6d7367;      /* warm grey */
+  --pcb-accent: #1570ef;     /* vibrant blue, deep enough to read on white */
+  --pcb-accent-strong: #175cd3;
+  --on-accent: #ffffff;      /* white text on the light-theme blue */
+  --pcb-blue: #1570ef;
+  --pcb-green: #12a75c;
+  --pcb-yellow: #b57612;
+  --pcb-orange: #c96a1e;     /* deeper orange for secondary / hot accents on white */
+  --pcb-purple: #7c4dff;
+  --pcb-red: #d64236;
+  --shadow-1: 0 1px 2px rgba(40, 50, 35, 0.06), 0 1px 1px rgba(40, 50, 35, 0.04);
+  --shadow-2: 0 12px 30px rgba(40, 60, 40, 0.12), 0 3px 8px rgba(40, 60, 40, 0.07);
+  --shadow-accent: 0 10px 28px color-mix(in srgb, var(--pcb-accent) 20%, transparent);
+}
+
+/* Dark chips/badges use hard-coded dark fills — swap them for light tints so
+   they don't read as dark blobs against a light UI. Text colors stay (var-based). */
+:root[data-theme="light"] .status-connected    { background: #e2f6ea; }
+:root[data-theme="light"] .status-reconnecting { background: #fbf1da; }
+:root[data-theme="light"] .status-closed       { background: #fdeceb; }
+:root[data-theme="light"] .status-offline      { background: #edeee9; }
+:root[data-theme="light"] .transport-wifi      { background: #e6eef5; }
+:root[data-theme="light"] .transport-ble       { background: #efeafc; }
+:root[data-theme="light"] .transport-serial    { background: #f8f1dd; }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--pcb-bg);
+  color: var(--pcb-text);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  min-height: 100vh;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Technical/device data (MACs, versions, ports) reads as mono — the sans/mono
+   pairing suits a hardware console and separates "chrome" from "readout". */
+.mono, code, kbd, .port-name, .home-card-product, .about-version { font-family: var(--font-mono); }
+
+/* ── Theme toggle ──────────────────────────────────────── */
+.nav-footer {
+  margin-top: auto;
+  padding: 0.5rem 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Buy Me a Coffee — a bare frame around the official artwork. No background or
+   border of our own: the button image carries its own brand styling. */
+.nav-bmac {
+  display: block;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  line-height: 0;
+  opacity: 0.92;
+  transition: opacity 0.12s, transform 0.12s;
+}
+.nav-bmac:hover { opacity: 1; transform: translateY(-1px); }
+.nav-bmac:focus-visible { outline: 2px solid var(--pcb-accent); outline-offset: 2px; }
+.nav-bmac img { width: 100%; height: auto; display: block; border-radius: 8px; }
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--pcb-border);
+  color: var(--pcb-muted);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+.theme-toggle:hover { color: var(--pcb-text); border-color: var(--pcb-accent); }
+.theme-toggle-icon { font-size: 1rem; line-height: 1; }
+.theme-toggle--icon {
+  width: auto;
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+}
+
+.container,
+.launcher {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+h1 {
+  color: var(--pcb-text);
+  font-size: 1.6rem;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+.scanning-badge {
+  font-size: 0.8rem;
+  color: var(--pcb-muted);
+  background: var(--pcb-surface);
+  border: 1px solid var(--pcb-border);
+  border-radius: 12px;
+  padding: 2px 10px;
+}
+
+.empty-hint {
+  color: var(--pcb-muted);
+  font-size: 0.9rem;
+  margin-top: 4rem;
+  text-align: center;
+}
+
+/* ── Plugins page ─────────────────────────────────────────────────────────── */
+.plugins-page { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+.plugins-section { margin-bottom: 2.5rem; }
+.plugins-section h2 {
+  font-size: 1rem;
+  color: var(--pcb-muted);
+  font-weight: 600;
+  margin-bottom: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.plugins-catalog-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.plugins-input {
+  flex: 1;
+  background: var(--pcb-bg);
+  border: 1px solid var(--pcb-border);
+  border-radius: 8px;
+  color: var(--pcb-text);
+  padding: 0.55rem 0.75rem;
+  font-size: 0.9rem;
+}
+.plugins-input:focus { outline: none; border-color: var(--pcb-accent); }
+.plugins-btn {
+  background: var(--pcb-surface);
+  border: 1px solid var(--pcb-border);
+  border-radius: 8px;
+  color: var(--pcb-text);
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.plugins-btn:hover:not(:disabled) { border-color: var(--pcb-accent); }
+.plugins-btn:disabled { opacity: 0.5; cursor: default; }
+.plugins-btn.primary { background: var(--pcb-accent); color: var(--on-accent); border-color: var(--pcb-accent); font-weight: 600; }
+.plugins-btn.primary:hover:not(:disabled) { background: var(--pcb-accent-strong); border-color: var(--pcb-accent-strong); }
+.plugins-btn.danger:hover:not(:disabled) { border-color: var(--pcb-red); color: var(--pcb-red); }
+.plugins-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.plugins-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--pcb-surface);
+  border: 1px solid var(--pcb-border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+}
+.plugins-row-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.plugins-row-name { font-weight: 600; }
+.plugins-row-version { color: var(--pcb-muted); font-weight: 400; font-size: 0.85rem; }
+.plugins-row-desc { font-size: 0.85rem; color: var(--pcb-text); }
+.plugins-row-product, .plugins-row-caps { font-size: 0.78rem; color: var(--pcb-muted); }
+.plugins-error {
+  background: rgba(248, 81, 73, 0.12);
+  border: 1px solid var(--pcb-red);
+  color: var(--pcb-red);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.device-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.device-card {
+  background: var(--pcb-surface);
+  border: 1px solid var(--pcb-border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.device-card:hover {
+  border-color: var(--pcb-accent);
+}
+
+.device-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.device-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--pcb-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.device-transport {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.transport-wifi   { background: var(--accent-tint); color: var(--pcb-accent); }
+.transport-ble    { background: color-mix(in srgb, var(--pcb-purple) 16%, transparent); color: var(--pcb-purple); }
+.transport-serial { background: color-mix(in srgb, var(--pcb-yellow) 16%, transparent); color: var(--pcb-yellow); }
+
+.device-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--pcb-muted);
+}
+
+.device-meta span::after {
+  content: '·';
+  margin-left: 0.4rem;
+}
+
+.device-meta span:last-child::after {
+  content: '';
+}
+
+.device-card--unsupported {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.device-card--unsupported:hover {
+  border-color: var(--pcb-border);
+}
+
+.device-unsupported {
+  font-size: 0.75rem;
+  color: var(--pcb-muted);
+  font-style: italic;
+}
+
+/* ── Flash page ────────────────────────────────────────── */
+
+.flash-hint {
+  color: var(--pcb-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.flash-error {
+  color: var(--pcb-red);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+/* Firmware library — signed catalog picker (source of the image to flash). */
+.fw-lib {
+  background: var(--pcb-surface);
+  border: 1px solid var(--pcb-border);
+  border-radius: 8px;
+  padding: 0.875rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.fw-lib-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+.fw-lib-head h2 {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.fw-lib-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.fw-lib-option {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.fw-lib-option:hover { border-color: var(--pcb-border); }
+.fw-lib-option--on {
+  border-color: var(--pcb-accent);
+  background: color-mix(in srgb, var(--pcb-accent) 7%, transparent);
+}
+.fw-lib-option input { accent-color: var(--pcb-accent); }
+.fw-lib-name { font-weight: 600; white-space: nowrap; }
+.fw-lib-notes {
+  color: var(--pcb-muted);
+  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fw-lib-selected {
+  margin-top: 0.6rem;
+  font-size: 0.8rem;
+  color: var(--pcb-muted);
+}
+
+.refresh-btn {
+  background: transparent;
+  border: 1px solid var(--pcb-border);
+  color: var(--pcb-text);
+  padding: 3px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  border-color: var(--pcb-accent);
+  color: var(--pcb-accent);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.port-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.port-card {
+  background: var(--pcb-surface);
+  border: 1px solid var(--pcb-border);
+  border-radius: 8px;
+  padding: 0.875rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.port-card:hover {
+  border-color: var(--pcb-accent);
+}
+
+.port-card--connecting {
+  border-color: var(--pcb-accent);
+  opacity: 0.8;
+}
+
+.port-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.port-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.port-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  font-family: monospace;
+  color: var(--pcb-text);
+}
+
+.port-ids {
+  font-size: 0.72rem;
+  font-family: monospace;
+  color: var(--pcb-muted);
+  background: var(--pcb-bg);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.port-description {
+  font-size: 0.8rem;
+  color: var(--pcb-muted);
+}
+
+.port-error {
+  font-size: 0.78rem;
+  color: var(--pcb-red);
+  margin-top: 0.125rem;
+}
+
+.connect-btn {
+  background: transparent;
+  border: 1px solid var(--pcb-accent);
+  color: var(--pcb-accent);
+  padding: 3px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.12s;
+  white-space: nowrap;
+}
+
+.connect-btn:hover:not(:disabled) {
+  background: var(--accent-tint);
+}
+
+.connect-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.flash-bin-btn {
+  background: transparent;
+  border: 1px solid var(--pcb-yellow);
+  color: var(--pcb-yellow);
+  padding: 3px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.12s;
+  white-space: nowrap;
+}
+
+.flash-bin-btn:hover:not(:disabled) {
+  background: rgba(210, 153, 34, 0.12);
+}
+
+.flash-bin-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* "Enter Flash Mode" — primary action for running OpenBricx devices.
+   Filled green to read as the recommended path vs. the outline "Flash .bin". */
+.flash-dfu-btn {
+  background: var(--pcb-accent);
+  border-color: var(--pcb-accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.flash-dfu-btn:hover:not(:disabled) {
+  background: var(--pcb-accent-strong);
+}
+
+.flash-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+}
+
+.flash-progress-track {
+  height: 4px;
+  background: var(--pcb-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.flash-progress-fill {
+  height: 100%;
+  background: var(--pcb-yellow);
+  border-radius: 2px;
+  transition: width 0.25s ease;
+}
+
+.flash-progress-label {
+  font-size: 0.75rem;
+  color: var(--pcb-muted);
+}
+
+/* ── Nav shell ─────────────────────────────────────────── */
+
+.nav-shell {
+  display: flex;
+  height: 100vh;
+}
+
+.nav-sidebar {
+  width: 176px;
+  flex-shrink: 0;
+  background: var(--pcb-surface);
+  border-right: 1px solid var(--pcb-border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.1rem 0;
+}
+
+.nav-brand {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--pcb-text);
+  padding: 0 1rem 0.9rem;
+  border-bottom: 1px solid var(--pcb-border);
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+/* The OpenBricx logo mark before the wordmark. It carries its own cream ground,
+   so a rounded tile + hairline reads as an app badge on either theme surface. */
+.nav-brand-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--pcb-border);
+  flex-shrink: 0;
+}
+
+.nav-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 0.5rem;
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: var(--pcb-muted);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--r-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.12s, color 0.12s;
+}
+
+.nav-item:hover {
+  background: color-mix(in srgb, var(--pcb-text) 7%, transparent);
+  color: var(--pcb-text);
+}
+
+.nav-item--active {
+  background: var(--accent-tint);
+  color: var(--pcb-accent);
+  font-weight: 600;
+}
+
+.nav-item--active:hover {
+  background: var(--accent-tint-strong);
+  color: var(--pcb-accent);
+}
+
+/* Green rail marking the active tab. */
+.nav-item--active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 1.1rem;
+  border-radius: 0 3px 3px 0;
+  background: var(--pcb-accent);
+}
+
+.nav-content {
+  flex: 1;
+  overflow: auto;
+}
+
+/* ── Connecting splash ─────────────────────────────────── */
+
+.container.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.connecting-text {
+  color: var(--pcb-muted);
+  font-size: 1rem;
+}
+
+.connect-error {
+  margin: 0.75rem 1.25rem 0;
+  padding: 0.6rem 0.85rem;
+  background: rgba(248, 81, 73, 0.12);
+  border: 1px solid rgba(248, 81, 73, 0.5);
+  border-radius: 8px;
+  color: var(--pcb-red);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.connect-error-dismiss {
+  color: var(--pcb-muted);
+  flex-shrink: 0;
+}
+
+/* ── Plugin shell ──────────────────────────────────────── */
+
+.plugin-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Plugin rendered inside the nav content area (sidebar stays visible). */
+.plugin-pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.plugin-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 1.25rem;
+  background: var(--pcb-surface);
+  border-bottom: 1px solid var(--pcb-border);
+  flex-shrink: 0;
+}
+
+.back-btn {
+  background: transparent;
+  border: 1px solid var(--pcb-border);
+  color: var(--pcb-text);
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.back-btn:hover {
+  border-color: var(--pcb-accent);
+  color: var(--pcb-accent);
+}
+
+.plugin-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  flex: 1;
+}
+
+.status-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 9px;
+  border-radius: 99px;
+}
+
+.status-connected    { background: color-mix(in srgb, var(--pcb-green) 16%, transparent);  color: var(--pcb-green); }
+.status-reconnecting { background: color-mix(in srgb, var(--pcb-yellow) 16%, transparent); color: var(--pcb-yellow); }
+.status-closed       { background: color-mix(in srgb, var(--pcb-red) 16%, transparent);    color: var(--pcb-red); }
+.status-offline      { background: color-mix(in srgb, var(--pcb-muted) 16%, transparent);  color: var(--pcb-muted); }
+
+.plugin-body {
+  flex: 1;
+  overflow: auto;
+}
+
+/* ── Nav icons ─────────────────────────────────────────── */
+
+.nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  margin-right: 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.nav-item--active .nav-icon {
+  opacity: 1;
+}
+
+/* ── Home page ─────────────────────────────────────────── */
+
+.home-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.home-header {
+  margin-bottom: 1.75rem;
+}
+
+.home-header h1 {
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--pcb-text);
+  margin-bottom: 0.15rem;
+}
+
+.home-subtitle {
+  font-size: 0.9rem;
+  color: var(--pcb-muted);
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.1rem;
+}
+
+/* MakerWorld-style product card: a tinted "cover" band (per-product hue) over a
+   solid body. No glass/backdrop-blur — solid surface + soft elevation reads as a
+   real object on the bench, not an AI dashboard tile. */
+.home-card {
+  --card-tint: var(--pcb-accent);
+  position: relative;
+  background: var(--pcb-surface);
+  border: 1px solid var(--pcb-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--shadow-1);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.home-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--card-tint) 55%, var(--pcb-border));
+  box-shadow: var(--shadow-2);
+}
+
+.home-card:focus-visible {
+  outline: 2px solid var(--card-tint);
+  outline-offset: 2px;
+}
+
+.home-card-cover {
+  position: relative;
+  height: 88px;
+  display: flex;
+  align-items: center;
+  padding: 0 1.15rem;
+  background:
+    radial-gradient(120% 140% at 88% -10%,
+      color-mix(in srgb, var(--card-tint) 34%, transparent) 0%,
+      transparent 60%),
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--card-tint) 16%, var(--pcb-surface)) 0%,
+      var(--pcb-surface) 100%);
+  border-bottom: 1px solid var(--pcb-border);
+}
+
+.home-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: var(--r-md);
+  background: var(--pcb-surface);
+  border: 1px solid color-mix(in srgb, var(--card-tint) 40%, var(--pcb-border));
+  box-shadow: var(--shadow-1);
+  font-size: 1.55rem;
+  flex-shrink: 0;
+  transition: transform 0.18s ease;
+}
+
+.home-card:hover .home-card-icon { transform: scale(1.06) rotate(-2deg); }
+
+.home-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.95rem 1.15rem 1.1rem;
+}
+
+.home-card-titlerow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.home-card-name {
+  font-weight: 700;
+  font-size: 1.02rem;
+  letter-spacing: -0.01em;
+  color: var(--pcb-text);
+}
+
+.home-card-product {
+  font-size: 0.72rem;
+  color: var(--pcb-muted);
+  background: var(--pcb-surface-2);
+  padding: 2px 7px;
+  border-radius: 5px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.home-card-transports {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+}
+
+.home-transport-badge {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 5px;
+}
+
+.home-open-badge {
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--pcb-muted);
+  flex-shrink: 0;
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.home-card:hover .home-open-badge {
+  color: var(--card-tint);
+  transform: translateX(3px);
+}
+
+/* ── About page ────────────────────────────────────────── */
+
+.about-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 2.5rem 1.5rem;
+}
+
+.about-card {
+  max-width: 780px;
+  width: 100%;
+  background: var(--pcb-surface);
+  border: 1px solid var(--pcb-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-2);
+  padding: 2.25rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.about-logo {
+  width: 88px;
+  height: 88px;
+  border-radius: var(--r-lg);
+  object-fit: cover;
+  border: 1px solid var(--pcb-border);
+  box-shadow: var(--shadow-1);
+  margin-bottom: 0.9rem;
+}
+
+.about-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--pcb-text);
+  letter-spacing: -0.01em;
+  margin-bottom: 0.25rem;
+}
+
+.about-version {
+  font-size: 0.72rem;
+  font-family: monospace;
+  color: var(--pcb-muted);
+  background: var(--pcb-bg);
+  border: 1px solid var(--pcb-border);
+  padding: 1px 8px;
+  border-radius: 99px;
+}
+
+.about-desc {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--pcb-muted);
+  margin: 0;
+}
+
+/* GPLv3 notice, directly under the version badge. */
+/* max-width was 42ch, sized for the old 440px card — in the wider card that
+   forced the notice into a tall narrow column. Font size is unchanged; only the
+   measure widened, which is what collapsed it to a couple of lines. */
+.about-license {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--pcb-muted);
+  max-width: 72ch;
+  margin: 0.9rem 0 0.85rem;
+}
+
+.about-inline-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--pcb-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.about-inline-link:hover { opacity: 0.8; }
+
+/* GPLv3 obligation: an unmissable route to the corresponding source. */
+.about-source-btn {
+  background: var(--pcb-bg);
+  border: 1px solid var(--pcb-accent);
+  color: var(--pcb-accent);
+  border-radius: 8px;
+  padding: 0.45rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.about-source-btn:hover { background: var(--pcb-accent); color: var(--on-accent, #fff); }
+
+.about-block {
+  width: 100%;
+  margin-top: 1.9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* The three link groups sit in a row on a wide card and collapse to a stack when
+   there isn't room — auto-fit keeps that responsive without a media query. */
+.about-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1.4rem 1.75rem;
+  width: 100%;
+  margin-top: 1.9rem;
+  align-items: start;
+}
+
+/* Inside the grid the row spacing comes from `gap`, and buttons fill their
+   column so all three groups line up on the same edges. */
+.about-groups .about-block { margin-top: 0; }
+.about-groups .about-socials { flex-direction: column; width: 100%; }
+.about-groups .about-social { width: 100%; min-width: 0; }
+
+.about-block-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--pcb-muted);
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.5rem;
+  width: 100%;
+  border-bottom: 1px solid var(--pcb-border);
+}
+
+.about-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+/* Every brand button is the same size regardless of label length, so no service
+   reads as preferred. min-width fits the longest label ("MakerWorld"); the icon
+   is centred with the text via justify-content. */
+.about-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 148px;
+  box-sizing: border-box;
+  background: var(--pcb-bg);
+  border: 1px solid var(--pcb-border);
+  color: var(--pcb-text);
+  padding: 0.5rem 0.95rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.1s;
+}
+
+.about-social:hover {
+  transform: translateY(-1px);
+}
+
+.about-social svg {
+  flex-shrink: 0;
+}
+
+/* GitHub has no single brand hue — its mark is black on light, white on dark.
+   --pcb-text already flips that way, so use it instead of a hard-coded #fff
+   (which rendered an invisible white mark on the light theme's pale card).
+   The tint is a neutral mid-grey so it reads against both backgrounds. */
+.about-social--github:hover {
+  border-color: var(--pcb-text);
+  color: var(--pcb-text);
+  background: rgba(140, 149, 159, 0.14);
+}
+
+.about-social--youtube:hover {
+  border-color: var(--pcb-red);
+  color: var(--pcb-red);
+  background: rgba(248, 81, 73, 0.08);
+}
+
+.about-social--instagram:hover {
+  border-color: var(--pcb-purple);
+  color: var(--pcb-purple);
+  background: rgba(188, 140, 255, 0.08);
+}
+
+.about-social--makerworld:hover {
+  border-color: #1bb96b;
+  color: #1bb96b;
+  background: rgba(27, 185, 107, 0.08);
+}
+
+.about-support-note {
+  font-size: 0.82rem;
+  color: var(--pcb-muted);
+  margin-bottom: 0.85rem;
+  max-width: 40ch;
+}
+
+/* Official Buy Me a Coffee artwork — brand assets must not be recoloured, so
+   this stays an <img> rather than an inline SVG like the links above. */
+.about-bmac {
+  display: block;
+  width: 190px;
+  max-width: 100%;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  line-height: 0;
+  opacity: 0.92;
+  transition: opacity 0.12s, transform 0.12s;
+}
+.about-bmac:hover { opacity: 1; transform: translateY(-1px); }
+.about-bmac:focus-visible { outline: 2px solid var(--pcb-accent); outline-offset: 2px; }
+.about-bmac img { width: 100%; height: auto; display: block; border-radius: 8px; }
+
+.about-credit {
+  font-size: 0.82rem;
+  color: var(--pcb-muted);
+  margin-top: 1.9rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--pcb-border);
+  width: 100%;
+}
+
+.about-heart {
+  font-style: normal;
+}
+
+/* Trademark attribution — deliberately quiet, but present. */
+.about-disclaimer {
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--pcb-muted);
+  opacity: 0.75;
+  max-width: 52ch;
+  margin-top: 0.9rem;
+}
+
+
+/* ── Shared page layout: masonry card grid (used by every plugin's tabs) ──── */
+/* Wide page container so the card grid has room for two columns. The per-plugin
+   `.*-page` classes are only 880px wide (fine for their list/table tabs), which
+   squeezed the grid down to a single column — this is the width Mods uses. */
+.ob-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem;
+}
+
+/* A page header sits above the cards. */
+.ob-page-head { margin-bottom: 1.25rem; }
+.ob-page-head h2 { font-size: 1.15rem; margin-bottom: 0.2rem; }
+.ob-page-head p { margin: 0; max-width: 68ch; }
+
+/* Masonry via CSS multi-column, NOT grid: a grid locks every row to its tallest
+   card, leaving a dead gap beside a short one. Columns pack cards of any height
+   top-to-bottom. ~440px column -> two columns on desktop, one when narrow. */
+.ob-cardgrid { column-width: 440px; column-gap: 1.1rem; }
+.ob-cardgrid > * {
+  break-inside: avoid;
+  page-break-inside: avoid;         /* legacy alias for older webviews */
+  margin-bottom: 1.1rem;            /* vertical gap (column-gap is horizontal only) */
+}
+
+/* Pair `.ob-panel` with a plugin's own card class (.mods-card / .deck-card / ...):
+   the card supplies surface + border + padding, the panel adds a divider heading
+   so sections read consistently across plugins. */
+.ob-panel > h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.9rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--pcb-border);
+}
+.ob-panel .info-grid { row-gap: 0.6rem; }
+.ob-panel .btn-row { margin-top: 0.2rem; }
+
+/* Shared field layouts used inside every plugin's cards. These were re-declared
+   per plugin with CONFLICTING values (info-grid was `1fr 1fr` in deck/pixels/ir
+   but `auto 1fr` in mods) — all global classes, so whichever stylesheet the
+   bundler emitted last silently restyled the other plugins. One copy, one look. */
+.info-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem 1rem;
+  font-size: 0.85rem;
+  align-items: center;
+}
+.btn-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }

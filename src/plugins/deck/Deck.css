@@ -1,0 +1,401 @@
+/* OpenBricx Deck plugin — inherits the Console PCB-dark theme variables. */
+
+.deck {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+}
+
+/* ── Tab bar ────────────────────────────────────────────── */
+
+.deck-tabbar {
+  display: flex;
+  gap: 4px;
+  padding: 0.6rem 1.25rem 0;
+  border-bottom: 1px solid var(--pcb-border);
+  background: var(--pcb-bg);
+}
+
+.deck-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--pcb-muted);
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+
+.deck-tab:hover { color: var(--pcb-text); }
+
+.deck-tab--active {
+  color: var(--pcb-accent);
+  border-bottom-color: var(--pcb-accent);
+}
+
+.deck-tab-icon { font-size: 0.95rem; }
+
+.deck-tabbar-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-bottom: 0.4rem;
+}
+
+.deck-offline-tag {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pcb-yellow);
+  border: 1px solid color-mix(in srgb, var(--pcb-yellow) 45%, transparent);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.deck-offline-hint {
+  margin: 0 0 1rem;
+  padding: 0.55rem 0.8rem;
+  background: rgba(210, 153, 34, 0.1);
+  border: 1px solid rgba(210, 153, 34, 0.4);
+  border-radius: 8px;
+  color: var(--pcb-text);
+  font-size: 0.82rem;
+}
+
+.deck-content { flex: 1; overflow: auto; }
+
+.deck-page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.muted { color: var(--pcb-muted); font-size: 0.85rem; }
+
+/* ── Dashboard ──────────────────────────────────────────── */
+
+.dashboard-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.dashboard-controls select,
+.action-fields select,
+.action-fields input {
+  background: var(--pcb-bg);
+  color: var(--pcb-text);
+  border: 1px solid var(--pcb-border);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.macro-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  max-width: 420px;
+  margin: 0 auto 1.5rem;
+}
+
+.grid-key {
+  aspect-ratio: 1;
+  background: var(--pcb-surface);
+  border: 1px solid var(--pcb-border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  color: var(--pcb-text);
+  transition: border-color 0.12s, transform 0.08s;
+}
+
+.grid-key:hover { border-color: var(--pcb-accent); }
+.grid-key:active { transform: scale(0.97); }
+
+.grid-key.selected {
+  border-color: var(--pcb-accent);
+  box-shadow: 0 0 0 1px var(--pcb-accent), 0 0 16px rgba(47, 203, 111, 0.2);
+}
+
+.key-icon { font-size: 1.6rem; }
+.key-label {
+  font-size: 0.72rem;
+  color: var(--pcb-muted);
+  text-align: center;
+  padding: 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* ── Inspector ──────────────────────────────────────────── */
+
+.property-inspector {
+  background: var(--pcb-surface);
+  border: 1px solid var(--pcb-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  min-height: 140px;
+}
+
+.placeholder-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 110px;
+  color: var(--pcb-muted);
+  font-size: 0.9rem;
+}
+.placeholder-icon { font-size: 1.8rem; }
+
+.inspector-body { display: flex; flex-direction: column; gap: 1.1rem; }
+
+.inspector-id { display: flex; align-items: center; gap: 0.9rem; }
+
+.inspector-preview {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: var(--pcb-bg);
+  border: 1px solid var(--pcb-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.inspector-id-text { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+
+.inspector-title-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  color: var(--pcb-text);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 2px 0;
+  outline: none;
+}
+.inspector-title-input:focus { border-bottom-color: var(--pcb-accent); }
+.inspector-id-sub { font-size: 0.75rem; color: var(--pcb-muted); }
+
+.mode-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.5rem;
+}
+
+.mode-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--pcb-bg);
+  border: 1px solid var(--pcb-border);
+  color: var(--pcb-muted);
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+.mode-pill:hover { color: var(--pcb-text); }
+.mode-pill.active {
+  border-color: var(--pcb-accent);
+  color: var(--pcb-accent);
+  background: rgba(47, 203, 111, 0.08);
+}
+.mode-pill-icon { font-size: 0.95rem; }
+
+.action-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+.field { display: flex; flex-direction: column; gap: 0.35rem; }
+.field label { font-size: 0.72rem; color: var(--pcb-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.field-row { display: flex; gap: 0.5rem; }
+.field-row input { flex: 1; }
+
+.field-btn,
+.deck-btn {
+  background: var(--pcb-bg);
+  border: 1px solid var(--pcb-border);
+  color: var(--pcb-text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.12s, color 0.12s;
+}
+.field-btn:hover,
+.deck-btn:hover { border-color: var(--pcb-accent); color: var(--pcb-accent); }
+
+.deck-btn.primary {
+  background: var(--pcb-accent);
+  border-color: var(--pcb-accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+.deck-btn.primary:hover { background: var(--pcb-accent-strong); border-color: var(--pcb-accent-strong); color: var(--on-accent); }
+
+.deck-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.deck-btn.primary:disabled {
+  background: var(--pcb-bg);
+  border-color: var(--pcb-border);
+  color: var(--pcb-muted);
+}
+
+.mod-chips { display: flex; gap: 0.35rem; }
+.mod-chip {
+  background: var(--pcb-bg);
+  border: 1px solid var(--pcb-border);
+  color: var(--pcb-muted);
+  padding: 5px 11px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.mod-chip.active {
+  border-color: var(--pcb-accent);
+  color: var(--pcb-accent);
+  background: rgba(47, 203, 111, 0.08);
+}
+
+/* ── Cards / Profiles / Settings ────────────────────────── */
+
+.deck-card {
+  background: var(--pcb-surface);
+  border: 1px solid var(--pcb-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+.deck-card h2 { font-size: 1.1rem; margin-bottom: 0.25rem; }
+.deck-card h3 { font-size: 0.95rem; margin-bottom: 0.6rem; }
+
+.profile-list { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; }
+.profile-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1rem;
+  background: var(--pcb-bg);
+  border: 1px solid var(--pcb-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+.profile-item:hover { border-color: var(--pcb-accent); }
+.profile-item.active {
+  border-color: var(--pcb-accent);
+  background: rgba(47, 203, 111, 0.06);
+}
+.profile-id { display: flex; align-items: center; gap: 0.8rem; }
+.profile-emoji { font-size: 1.3rem; }
+.profile-name { font-weight: 600; }
+.profile-name-input {
+  background: var(--pcb-bg);
+  color: var(--pcb-text);
+  border: 1px solid var(--pcb-accent);
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-weight: 600;
+  width: 150px;
+}
+.profile-sub { font-size: 0.75rem; color: var(--pcb-muted); }
+.profile-actions { display: flex; align-items: center; gap: 0.5rem; }
+.profile-active-dot { color: var(--pcb-green); font-size: 0.8rem; margin-right: 0.4rem; }
+.profile-action-btn {
+  background: transparent;
+  border: 1px solid var(--pcb-border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.profile-action-btn:hover { border-color: var(--pcb-accent); }
+
+/* .setting-group / .info-grid / .btn-row are shared globals in App.css — no
+   deck element renders .setting-group since the Settings page moved to
+   .ob-panel cards, and the local .info-grid/.btn-row copies conflicted with
+   the other plugins' (import order decided which won). */
+.radio-col { display: flex; flex-direction: column; gap: 0.5rem; }
+.radio-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer; }
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.85rem;
+}
+.setting-row input[type='range'] { flex: 1; accent-color: var(--pcb-accent); max-width: 200px; }
+
+.deck-btn.danger { border-color: color-mix(in srgb, var(--pcb-red) 45%, transparent); color: #f85149; }
+.deck-btn.danger:hover { border-color: #f85149; color: #f85149; }
+
+/* Toggle switch */
+.toggle {
+  width: 42px;
+  height: 22px;
+  border-radius: 99px;
+  border: none;
+  background: var(--pcb-border);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.toggle.on { background: var(--pcb-green); }
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.15s;
+}
+.toggle.on .toggle-knob { left: 22px; }
+
+/* ── Toast ──────────────────────────────────────────────── */
+
+.deck-toast {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--pcb-surface);
+  border: 1px solid var(--pcb-accent);
+  color: var(--pcb-text);
+  padding: 0.6rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  animation: deck-toast-in 0.2s ease;
+}
+
+@keyframes deck-toast-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}

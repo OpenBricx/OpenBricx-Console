@@ -1,0 +1,86 @@
+# Build the Windows installer and Authenticode-sign it via SignPath, then attach it
+# to a GitHub Release. SignPath signing is the OS-trust layer (SmartScreen); it is
+# entirely separate from the Ed25519 plugin signing in publish-plugins.yml.
+#
+# One-time setup (free for open source via the SignPath Foundation — apply at
+# https://signpath.org/ once the repo is public):
+#   • Create a SignPath organization + project + signing policy.
+#   • Repo secret:   SIGNPATH_API_TOKEN
+#   • Repo variables: SIGNPATH_ORGANIZATION_ID, SIGNPATH_PROJECT_SLUG,
+#                     SIGNPATH_POLICY_SLUG
+# Until those exist, the build job still runs; the signing job is skipped.
+
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    outputs:
+      artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+
+      # Builds the frontend (beforeBuildCommand) then the Tauri app + installers.
+      - run: npm run tauri build
+
+      - name: Stage unsigned installer
+        id: stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p unsigned
+          # NSIS is the primary installer; copy whatever bundles were produced.
+          find src-tauri/target/release/bundle -type f \( -name '*-setup.exe' -o -name '*.msi' \) -exec cp {} unsigned/ \;
+          ls -la unsigned
+
+      - name: Upload unsigned installer
+        id: upload-unsigned
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-unsigned
+          path: unsigned/*
+
+  sign:
+    needs: build
+    runs-on: ubuntu-latest
+    # Only run when SignPath is configured, so the workflow is usable before onboarding.
+    if: ${{ vars.SIGNPATH_PROJECT_SLUG != '' }}
+    steps:
+      - name: Submit to SignPath
+        id: signpath
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG }}
+          github-artifact-id: ${{ needs.build.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: signed
+
+      - name: Publish signed installer
+        uses: softprops/action-gh-release@v2
+        with:
+          files: signed/*

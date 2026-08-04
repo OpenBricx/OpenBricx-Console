@@ -1,0 +1,43 @@
+{
+  "name": "openbricx-console",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Cross-platform hardware hub for the OpenBricx ecosystem — one app, one plugin per product.",
+  "type": "module",
+  "license": "GPL-3.0-only",
+  "author": "Apurv Arya",
+  "homepage": "https://github.com/OpenBricx/OpenBricx-Console",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenBricx/OpenBricx-Console.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OpenBricx/OpenBricx-Console/issues"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "plugin:keygen": "node scripts/plugin-keys.mjs",
+    "plugin:sign": "node scripts/sign-plugin.mjs",
+    "plugin:sign-file": "node scripts/sign-file.mjs",
+    "plugin:build": "node scripts/build-plugin.mjs",
+    "catalog:dev": "node scripts/dev-catalog.mjs"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2.7.1",
+    "esptool-js": "^0.3.2",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^4",
+    "typescript": "^5",
+    "vite": "^5"
+  }
+}

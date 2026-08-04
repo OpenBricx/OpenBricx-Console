@@ -1,0 +1,103 @@
+# Build, sign, and publish OpenBricx plugins (Ed25519) to GitHub Releases.
+#
+# Produces one <product>-<version>.obxplugin per plugin — every dir under
+# src/plugins/ or examples/ holding a manifest.json + index.tsx — plus a signed
+# catalog.json the Console fetches. Trust comes from the Ed25519 signature inside
+# each bundle (verified against TRUSTED_KEYS in src-tauri/src/plugins_host.rs); this
+# workflow only needs the matching PRIVATE key.
+#
+# Required secret:
+#   OBX_PLUGIN_PRIVATE_KEY   base64 PKCS8 of the publisher private key
+#                            (printed by `npm run plugin:keygen`)
+#
+# Publishing model (matches the default URL baked into src/core/config.ts):
+#   • the versioned tag release (plugins-vN) gets ALL assets — immutable history;
+#   • the rolling `plugins-latest` release gets the same assets — a stable URL:
+#       https://github.com/<owner>/<repo>/releases/download/plugins-latest/catalog.json
+
+name: Publish plugins
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish to (e.g. plugins-v1)
+        required: true
+  push:
+    tags:
+      - 'plugins-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Resolve tag
+        id: tag
+        run: echo "tag=${{ github.event.inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"
+
+      - name: Build & sign plugins
+        env:
+          OBX_PLUGIN_PRIVATE_KEY: ${{ secrets.OBX_PLUGIN_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          dirs=()
+          # Only src/plugins/* ships. examples/ is reference material for plugin
+          # authors and must never reach the catalog users install from.
+          for d in src/plugins/*/; do
+            if [ -f "${d}manifest.json" ] && [ -f "${d}index.tsx" ]; then
+              echo "::group::build ${d}"
+              npm run plugin:build "$d"
+              echo "::endgroup::"
+              dirs+=("$d")
+            fi
+          done
+          printf '%s\n' "${dirs[@]}" > built-dirs.txt
+
+      - name: Build & sign catalog
+        env:
+          OBX_PLUGIN_PRIVATE_KEY: ${{ secrets.OBX_PLUGIN_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          # Download URLs point at the rolling release so the catalog keeps working
+          # as new versions replace old assets in place.
+          base="https://github.com/${{ github.repository }}/releases/download/plugins-latest"
+          mapfile -t dirs < built-dirs.txt
+          node scripts/build-catalog.mjs --base-url "$base" --out catalog.json "${dirs[@]}"
+          npm run plugin:sign-file catalog.json
+
+      - name: Collect artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          find src/plugins -name '*.obxplugin' -exec cp {} release/ \;
+          cp catalog.json catalog.json.sig release/
+          ls -la release
+
+      - name: Publish to versioned release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          files: release/*
+
+      - name: Publish to rolling plugins-latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: plugins-latest
+          name: Plugin catalog (latest)
+          body: >
+            Rolling release backing the Console's built-in plugin catalog URL.
+            Assets here are replaced by each `plugins-v*` publish — see the
+            versioned releases for history.
+          files: release/*

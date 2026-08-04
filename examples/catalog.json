@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "plugins": [
+    {
+      "product": "openbricx-hello",
+      "name": "Hello Plugin",
+      "version": "1.0.0",
+      "minAppVersion": "0.1.0",
+      "description": "Reference external plugin — proves the signed dynamic loader.",
+      "url": "https://openbricx.example/plugins/openbricx-hello-1.0.0.obxplugin",
+      "sha256": ""
+    }
+  ]
+}

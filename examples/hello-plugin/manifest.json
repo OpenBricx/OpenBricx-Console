@@ -1,0 +1,9 @@
+{
+  "product": "openbricx-hello",
+  "name": "Hello Plugin",
+  "icon": "hello",
+  "transports": ["wifi"],
+  "version": "1.0.0",
+  "minAppVersion": "0.1.0",
+  "capabilities": []
+}
